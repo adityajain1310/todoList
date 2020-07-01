@@ -112,10 +112,6 @@ route.delete('/:id', (req, res) => {
         }
     )
 
-    connection.query(
-        `DECLARE @Total AS INT
-        SELECT @Total=COUNT(*) FROM `
-    )
     //todos.splice(req.params.id - 1, 1)
     connection.query(
         `SELECT task FROM todoactivity`,
