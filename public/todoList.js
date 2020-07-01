@@ -1,9 +1,9 @@
 $(function () {
-    let showToDoList = $('#showtodo')
-    let newToDOBox = $('#newtodo')
-    let indexBox = $('#index')
-    let addToDoBtn = $('#addtodo')
-    let todoList = $('#todolist')
+    let showToDoList  = $('#showtodo')
+    let newToDOBox    = $('#newtodo')
+    let indexBox      = $('#index')
+    let addToDoBtn    = $('#addtodo')
+    let todoList      = $('#todolist')
     let updateToDoBtn = $('#updatetodo')
     let deleteToDoBtn = $('#deletetodo')
 
@@ -37,16 +37,35 @@ $(function () {
     updateToDoBtn.click(function () {
         let index = indexBox.val()
         let newToDo = newToDOBox.val()
-        $.patch(
-            '/todoList/' + index,
-            {task: newToDo},
-            function (data) {
+        $.ajax({
+            url: '/todoList/' + index,
+            type: 'PATCH',
+            data: {task: newToDo},
+            success: function (data) {
                 todoList.empty();
                 for(todo of data) {
-                    todoList.append("<li>" + todo.task + "<li>")
+                    if(todo.task!=''){
+                        todoList.append("<li>" + todo.task + "<li>")    
+                    }
                 }
             }
-        )
+        })
     })
 
-})
+    deleteToDoBtn.click( function () {
+        let index = indexBox.val()
+        $.ajax({
+            url: '/todoList/' + index,
+            type: 'DELETE',
+            success: function (data) {
+                todoList.empty();
+                for(todo of data) {
+                    if(todo.task!=""){
+                        todoList.append("<li>" + todo.task + "<li>")
+                        $('#todoList').remove(".test");
+                    }
+                }
+            }
+        })
+    })
+})  
