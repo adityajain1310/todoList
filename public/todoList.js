@@ -62,7 +62,7 @@ $(function () {
                 for(todo of data) {
                     if(todo.task!=""){
                         todoList.append("<li>" + todo.task + "<li>")
-                        $('#todoList').remove(".test");
+                        $('#todoList').remove(".test"); 
                     }
                 }
             }

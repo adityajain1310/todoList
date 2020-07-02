@@ -1,11 +1,14 @@
 const route = require('express').Router()
 const mysql = require('mysql2')
 
+let todos = []
+
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'todoList',
     database: 'tododb'
 });
+
 
 connection.query(
     `CREATE TABLE IF NOT EXISTS todoactivity (
@@ -20,23 +23,29 @@ connection.query(
     }
 )
 
-route.get('/', (req, res) => {
-    connection.query(
-        'SELECT task FROM todoactivity',
-        function (err, todos) {
-            if (err) {
-                console.error(err)
-            }
-            else {
-                console.log(todos)
-                res.send(todos)
+connection.query(
+    `SELECT task FROM todoactivity`,
+    function (err, results) {
+        if (err) {
+            console.error(err)
+        } else {
+            console.log(results)
+            for(todo of results) {
+                todos.push({
+                    task: todo.task
+                })
             }
         }
-    )
+    } 
+)
+route.get('/', (req, res) => {
+    res.send(todos)
 })
 
 route.post('/', (req, res) => {
-    console.log(req.body.task)
+    todos.push({
+        task: req.body.task
+    })
     connection.query(
         `INSERT INTO todoactivity (task) VALUES ("${req.body.task}")`,
         function (err, results) {
@@ -47,38 +56,13 @@ route.post('/', (req, res) => {
          }
         }
     )
-    connection.query(
-        'SELECT task FROM todoactivity',
-        function (err, todos) {
-            if (err) {
-                console.error(err)
-            }
-            else {
-                console.log(todos)
-                res.send(todos)
-            }
-            
-        }
-    )
-})
-
-route.get('/:id', (req, res) => {
-    connection.query(
-        `SELECT task FROM todoactivity where id=${req.params.id}`,
-        function (err, todos) {
-            if (err) {
-                console.error(err)
-            } else {
-                console.log(todos)
-                res.send(todos)
-            }
-        }
-    )
+    res.send(todos)
 })
 
 route.patch('/:id', (req, res) => {
+    console.log(todos[req.params.id - 1].task)
     connection.query(
-        `UPDATE todoactivity SET task="${req.body.task}" WHERE id=${req.params.id}`,
+        `UPDATE todoactivity SET task="${req.body.task}" WHERE task="${todos[req.params.id - 1].task}"`,
         function (err, results) {
             if (err) {
                 console.error(err)
@@ -87,22 +71,15 @@ route.patch('/:id', (req, res) => {
             }
         }
     )
-    connection.query(
-        `SELECT task FROM todoactivity`,
-        function (err, todos) {
-            if (err) {
-                console.error(err)
-            } else {
-                console.log(todos)
-                res.send(todos)
-            }
-        }
-    )
+
+    todos[req.params.id - 1].task = req.body.task
+    
+    res.send(todos)
 })
 
 route.delete('/:id', (req, res) => {
     connection.query(
-        `DELETE FROM todoactivity WHERE id=${req.params.id}`,
+        `DELETE FROM todoactivity WHERE task=${todos[req.params.id - 1].task}`,
         function (err, results) {
             if (err) {
                 console.error(err)
@@ -111,19 +88,11 @@ route.delete('/:id', (req, res) => {
             }
         }
     )
+    
+    todos.splice(req.params.id - 1, 1)
 
-    //todos.splice(req.params.id - 1, 1)
-    connection.query(
-        `SELECT task FROM todoactivity`,
-        function (err, todos) {
-            if (err) {
-                console.error(err)
-            } else {
-                console.log(todos)
-                res.send(todos)
-            }
-        }
-    )
+    res.send(todos)
+
 })
 
 module.exports = route
